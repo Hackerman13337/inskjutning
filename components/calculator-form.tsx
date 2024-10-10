@@ -49,7 +49,17 @@ export default function CalculatorForm() {
     setResult({ horizontalClicks: -Nh, verticalClicks: -Nv })
   }
 
-  const DirectionButton = ({ direction, active, onClick, icon: Icon }) => (
+  const DirectionButton = ({
+    direction,
+    active,
+    onClick,
+    icon: Icon
+  }: {
+    direction: 'left' | 'right' | 'up' | 'down';
+    active: boolean;
+    onClick: () => void;
+    icon: React.ElementType;
+  }) => (
     <Button
       type="button"
       variant="outline"
