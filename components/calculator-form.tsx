@@ -66,6 +66,7 @@ export default function CalculatorForm() {
       size="icon"
       className={`p-0 w-8 h-8 ${active ? 'bg-primary text-primary-foreground' : ''}`}
       onClick={onClick}
+      data-direction={direction}
     >
       <Icon className="h-4 w-4" />
     </Button>
