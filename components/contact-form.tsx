@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Toast } from '@/components/ui/toast'
 import { toast } from '@/hooks/use-toast'
 
 export default function ContactForm() {
