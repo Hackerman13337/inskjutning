@@ -1,4 +1,4 @@
-import ContactForm from '@/components/contact-form'
+import { ContactForm } from '@/components/contact-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function ContactPage() {

@@ -1,5 +1,8 @@
 'use client'
 
+import React from "react"
+import { TooltipProvider } from "@/components/ui/tooltip"
+// import { useRef, useEffect } from "react"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,12 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Info } from "lucide-react"
 import { TargetView } from "./target-view"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { PersistentTooltip } from './persistent-tooltip'
 
 interface CalculationResult {
   horizontalClicks: number;
@@ -90,17 +88,10 @@ export default function CalculatorForm() {
                 <Label htmlFor="horizontalDeviation">Horisontell avvikelse</Label>
                 <span className="text-sm text-gray-500">(cm)</span>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
-                    <Info className="h-4 w-4" />
-                    <span className="sr-only">Info om avvikelse</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Ange avvikelsen i cm och välj riktning med pilarna</p>
-                </TooltipContent>
-              </Tooltip>
+              <PersistentTooltip content="Ange avvikelsen i cm och välj riktning med pilarna">
+                <Info className="h-4 w-4" />
+                <span className="sr-only">Info om avvikelse</span>
+              </PersistentTooltip>
             </div>
             <div className="flex items-center space-x-2">
               <Input
@@ -135,17 +126,10 @@ export default function CalculatorForm() {
                 <Label htmlFor="verticalDeviation">Vertikal avvikelse</Label>
                 <span className="text-sm text-gray-500">(cm)</span>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
-                    <Info className="h-4 w-4" />
-                    <span className="sr-only">Info om avvikelse</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Ange avvikelsen i cm och välj riktning med pilarna</p>
-                </TooltipContent>
-              </Tooltip>
+              <PersistentTooltip content="Ange avvikelsen i cm och välj riktning med pilarna">
+                <Info className="h-4 w-4" />
+                <span className="sr-only">Info om avvikelse</span>
+              </PersistentTooltip>
             </div>
             <div className="flex items-center space-x-2">
               <Input
@@ -180,17 +164,10 @@ export default function CalculatorForm() {
                 <Label htmlFor="distance">Avstånd till målet</Label>
                 <span className="text-sm text-gray-500">(m)</span>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
-                    <Info className="h-4 w-4" />
-                    <span className="sr-only">Info om avstånd</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Ange avståndet till målet i meter</p>
-                </TooltipContent>
-              </Tooltip>
+              <PersistentTooltip content="Ange avståndet till målet i meter">
+                <Info className="h-4 w-4" />
+                <span className="sr-only">Info om avstånd</span>
+              </PersistentTooltip>
             </div>
             <Input
               id="distance"
@@ -204,7 +181,7 @@ export default function CalculatorForm() {
 
           {/* Justeringstyp */}
           <div>
-            <Label htmlFor="adjustmentType">Justeringstyp</Label>
+            <Label htmlFor="adjustmentType">Välj justeringsenhet (MOA/MIL)</Label>
             <Select
               value={adjustmentType}
               onValueChange={(value: "MOA" | "MIL") => setAdjustmentType(value)}
