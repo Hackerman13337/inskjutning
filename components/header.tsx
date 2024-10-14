@@ -18,35 +18,41 @@ export function Header() {
 
   return (
     <header className="bg-white shadow-md relative z-50">
-      <div className="container mx-auto px-4 max-w-[1000px]">
+      <div className="container mx-auto px-4 max-w-[800px]">
         <div className="flex items-center justify-between py-2">
-          <div className="w-1/4 relative z-50 flex justify-start">
-            <div className="max-w-[800px] w-full flex justify-start">
-              <Link href="/">
-                <svg width="40" height="40" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="25" cy="25" r="23" stroke="black" strokeWidth="2"/>
-                  <circle cx="25" cy="25" r="5" fill="black"/>
-                  <line x1="2" y1="25" x2="48" y2="25" stroke="black" strokeWidth="2"/>
-                  <line x1="25" y1="2" x2="25" y2="48" stroke="black" strokeWidth="2"/>
-                </svg>
-              </Link>
-            </div>
+          <div className="w-1/4 md:w-[100px] relative z-50 flex justify-start">
+            <Link href="/">
+              <svg width="40" height="40" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="25" r="23" stroke="black" strokeWidth="2"/>
+                <circle cx="25" cy="25" r="5" fill="black"/>
+                <line x1="2" y1="25" x2="48" y2="25" stroke="black" strokeWidth="2"/>
+                <line x1="25" y1="2" x2="25" y2="48" stroke="black" strokeWidth="2"/>
+              </svg>
+            </Link>
           </div>
           <nav className="hidden md:flex justify-center flex-grow">
-            {menuItems.map((item) => (
-              <Link key={item.name} href={item.href} className="text-gray-600 hover:text-gray-900 mx-4">
-                {item.name}
-              </Link>
-            ))}
+            <div className="flex justify-center space-x-8">
+              {menuItems.map((item) => (
+                <Link 
+                  key={item.name} 
+                  href={item.href} 
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </nav>
-          <div className="w-1/4 flex justify-end md:hidden">
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 z-50 relative"
-              aria-label={isMenuOpen ? "Stäng meny" : "Öppna meny"}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+          <div className="w-1/4 md:w-[100px] flex justify-end">
+            <div className="md:hidden">
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 z-50 relative"
+                aria-label={isMenuOpen ? "Stäng meny" : "Öppna meny"}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>

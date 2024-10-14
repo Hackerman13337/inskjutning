@@ -1,9 +1,8 @@
 'use client'
 
-import React from "react"
+import React, { useState } from "react"
 import { TooltipProvider } from "@/components/ui/tooltip"
 // import { useRef, useEffect } from "react"
-import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,6 +11,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Info } from "lucide-react"
 import { TargetView } from "./target-view"
 import { PersistentTooltip } from './persistent-tooltip'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { toast } from "@/hooks/use-toast"
 
 interface CalculationResult {
   horizontalClicks: number;
@@ -26,6 +27,12 @@ export default function CalculatorForm() {
   const [distance, setDistance] = useState("")
   const [adjustmentType, setAdjustmentType] = useState<"MOA" | "MIL">("MOA")
   const [result, setResult] = useState<CalculationResult | null>(null)
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false)
+  const [errors, setErrors] = useState<{
+    horizontalDeviation?: string;
+    verticalDeviation?: string;
+    distance?: string;
+  }>({})
 
   const handleDeviationChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -34,7 +41,32 @@ export default function CalculatorForm() {
     }
   }
 
+  const validateInputs = () => {
+    const newErrors: typeof errors = {}
+    
+    if (!horizontalDeviation) {
+      newErrors.horizontalDeviation = "Horisontell avvikelse måste anges"
+    }
+    if (!verticalDeviation) {
+      newErrors.verticalDeviation = "Vertikal avvikelse måste anges"
+    }
+    if (!distance) {
+      newErrors.distance = "Avstånd måste anges"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleCalculate = () => {
+    if (!validateInputs()) {
+      toast({
+        title: "Ofullständig information",
+        description: "Vänligen fyll i alla fält innan du beräknar.",
+      })
+      return
+    }
+
     const Ah = parseFloat(horizontalDeviation) * (horizontalDirection === "left" ? -1 : 1)
     const Av = parseFloat(verticalDeviation) * (verticalDirection === "down" ? -1 : 1)
     const D = parseFloat(distance)
@@ -45,6 +77,7 @@ export default function CalculatorForm() {
     const Nv = Math.round((Av * clicksPerCm) / (D / 100))
     
     setResult({ horizontalClicks: -Nh, verticalClicks: -Nv })
+    setIsResultModalOpen(true)
   }
 
   const DirectionButton = ({
@@ -101,6 +134,7 @@ export default function CalculatorForm() {
                 value={horizontalDeviation}
                 onChange={handleDeviationChange(setHorizontalDeviation)}
                 placeholder="Avvikelse"
+                className={errors.horizontalDeviation ? "border-red-500" : ""}
               />
               <div className="flex space-x-2">
                 <DirectionButton
@@ -117,6 +151,9 @@ export default function CalculatorForm() {
                 />
               </div>
             </div>
+            {errors.horizontalDeviation && (
+              <p className="text-red-500 text-sm mt-1">{errors.horizontalDeviation}</p>
+            )}
           </div>
 
           {/* Vertikal avvikelse */}
@@ -139,6 +176,7 @@ export default function CalculatorForm() {
                 value={verticalDeviation}
                 onChange={handleDeviationChange(setVerticalDeviation)}
                 placeholder="Avvikelse"
+                className={errors.verticalDeviation ? "border-red-500" : ""}
               />
               <div className="flex space-x-2">
                 <DirectionButton
@@ -155,6 +193,9 @@ export default function CalculatorForm() {
                 />
               </div>
             </div>
+            {errors.verticalDeviation && (
+              <p className="text-red-500 text-sm mt-1">{errors.verticalDeviation}</p>
+            )}
           </div>
 
           {/* Avstånd */}
@@ -176,7 +217,11 @@ export default function CalculatorForm() {
               value={distance}
               onChange={handleDeviationChange(setDistance)}
               placeholder="Avstånd"
+              className={errors.distance ? "border-red-500" : ""}
             />
+            {errors.distance && (
+              <p className="text-red-500 text-sm mt-1">{errors.distance}</p>
+            )}
           </div>
 
           {/* Justeringstyp */}
@@ -196,22 +241,35 @@ export default function CalculatorForm() {
             </Select>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter>
           <Button onClick={handleCalculate} className="w-full">Beräkna</Button>
+        </CardFooter>
+      </Card>
+
+      <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
+        <DialogContent className="sm:max-w-[425px] w-[90vw] max-w-[90vw] p-4 sm:p-6 rounded-lg">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl">Beräkningsresultat</DialogTitle>
+            <DialogDescription className="text-sm mt-2">Här är de beräknade justeringarna:</DialogDescription>
+          </DialogHeader>
           {result && (
-            <div className="w-full p-4 bg-gray-100 rounded-md">
+            <div className="p-5 bg-gray-100 rounded-md space-y-3">
               <p className="font-semibold">
-                Horisontella klick: {Math.abs(result.horizontalClicks)} 
-                ({result.horizontalClicks > 0 ? "höger" : result.horizontalClicks < 0 ? "vänster" : "ingen justering"})
+                Horisontella klick: <span className="text-lg">
+                  {Math.abs(result.horizontalClicks)}{' '}
+                  ({result.horizontalClicks > 0 ? "höger" : result.horizontalClicks < 0 ? "vänster" : "ingen justering"})
+                </span>
               </p>
               <p className="font-semibold">
-                Vertikala klick: {Math.abs(result.verticalClicks)} 
-                ({result.verticalClicks > 0 ? "upp" : result.verticalClicks < 0 ? "ner" : "ingen justering"})
+                Vertikala klick: <span className="text-lg">
+                  {Math.abs(result.verticalClicks)}{' '}
+                  ({result.verticalClicks > 0 ? "upp" : result.verticalClicks < 0 ? "ner" : "ingen justering"})
+                </span>
               </p>
             </div>
           )}
-        </CardFooter>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   )
 }

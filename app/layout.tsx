@@ -1,7 +1,18 @@
-import { Header } from '@/components/header'
-import { FeedbackButton } from '@/components/feedback-button'
-import { Toaster } from '@/components/ui/toaster'
-import '@/app/globals.css'
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { Header } from "@/components/header"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "Inskjutning",
+  description: "Beräkna inskjutning för ditt vapen",
+  icons: {
+    icon: '/image/logofav.png',
+    apple: '/image/logofav.png',
+  },
+}
 
 export default function RootLayout({
   children,
@@ -10,14 +21,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <Header />
         {children}
-        {/* Visa endast på större skärmar */}
-        <div className="hidden md:block">
-          <FeedbackButton variant="icon" />
-        </div>
-        <Toaster />
       </body>
     </html>
   )
