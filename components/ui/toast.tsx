@@ -65,5 +65,5 @@ export {
   toastVariants,
   ToastCloseButton
 }
-
 export type { ToastProps }
+

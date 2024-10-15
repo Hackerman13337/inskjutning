@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { MessageSquarePlus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { toast } from '@/hooks/use-toast'
 import { createPortal } from 'react-dom'
+import { useToast } from '@/hooks/use-toast'
 
 interface FeedbackButtonProps {
   variant?: 'icon' | 'menu-item'
@@ -16,21 +16,39 @@ export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackBut
   const [isOpen, setIsOpen] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [mounted, setMounted] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
     return () => setMounted(false)
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Feedback submitted:', feedback)
-    toast({
-      title: "Tack för din feedback!",
-      description: "Vi uppskattar dina synpunkter och kommer att granska dem.",
-    })
-    setFeedback('')
-    setIsOpen(false)
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback }),
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Feedback Sent",
+          description: "Thank you for your feedback!",
+        })
+        setFeedback('')
+        setIsOpen(false)
+      } else {
+        throw new Error('Failed to submit feedback')
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error)
+      toast({
+        title: "An error occurred",
+        description: "Failed to send your feedback. Please try again later.",
+      })
+    }
   }
 
   const handleOpenFeedback = () => setIsOpen(true)
@@ -64,16 +82,19 @@ export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackBut
 
   return (
     <>
-      {variant === 'icon' ? (
-        <Button
-          onClick={handleOpenFeedback}
-          className={`fixed bottom-4 right-4 z-50 shadow-lg hover:shadow-xl transition-all duration-300
-                     rounded-full w-14 h-14 sm:w-16 sm:h-16
-                     flex items-center justify-center ${className}`}
-        >
-          <MessageSquarePlus className="w-7 h-7 sm:w-8 sm:h-8" />
-        </Button>
-      ) : (
+      {variant === 'icon' && (
+        <div className="fixed bottom-4 right-4 z-[99999] hidden md:block">
+          <Button
+            onClick={handleOpenFeedback}
+            className={`shadow-lg hover:shadow-xl transition-all duration-300
+                       rounded-full w-14 h-14 sm:w-16 sm:h-16
+                       flex items-center justify-center ${className}`}
+          >
+            <MessageSquarePlus className="w-7 h-7 sm:w-8 sm:h-8" />
+          </Button>
+        </div>
+      )}
+      {variant === 'menu-item' && (
         <Button onClick={handleOpenFeedback} className={`w-full justify-center py-6 ${className}`}>
           <MessageSquarePlus className="mr-2 h-5 w-5" />
           <span>Lämna feedback</span>
