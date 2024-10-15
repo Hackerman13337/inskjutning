@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../../lib/supabase'
 
 async function getFeedback() {
   const { data, error } = await supabase
@@ -18,7 +18,7 @@ export default async function AdminPage() {
       <h1>Admin Dashboard</h1>
       <h2>Feedback</h2>
       <ul>
-        {feedback.map((item) => (
+        {feedback.map((item: any) => (
           <li key={item.id}>
             {new Date(item.created_at).toLocaleString()}: {item.message}
           </li>
