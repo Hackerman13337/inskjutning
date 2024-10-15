@@ -1,54 +1,55 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs/promises'
-import path from 'path'
+import { supabase } from '@/lib/supabase'
 
 export async function GET() {
+  console.log('Fetching feedback from Supabase...')
+  
   try {
-    const filePath = path.join(process.cwd(), 'feedback.log')
-    const fileContent = await fs.readFile(filePath, 'utf8')
-    const feedbackItems = fileContent.trim().split('\n').map(line => {
-      const [timestamp, ...contentParts] = line.split(':')
-      const date = new Date(timestamp)
-      const formattedDate = isNaN(date.getTime()) 
-        ? 'Invalid Date' 
-        : date.toLocaleString('sv-SE', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          })
-      return {
-        timestamp: formattedDate,
-        content: contentParts.join(':').trim()
-      }
-    }).reverse()
+    const { data, error } = await supabase
+      .from('feedback')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-    return NextResponse.json(feedbackItems)
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
+
+    console.log('Fetched feedback:', data)
+
+    // Transform the data to match the expected structure
+    const transformedData = data.map(item => ({
+      timestamp: item.created_at,
+      content: item.message
+    }))
+
+    return NextResponse.json(transformedData)
   } catch (error) {
-    console.error('Error reading feedback:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error fetching feedback:', error)
+    return NextResponse.json({ error: 'Failed to fetch feedback' }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
+  console.log('Feedback submission attempt received')
+  
   try {
-    const { feedback } = await request.json()
+    const { message } = await request.json()
+    console.log('Received message:', message)
     
-    if (!feedback) {
-      return NextResponse.json({ error: 'Feedback is required' }, { status: 400 })
+    const { data, error } = await supabase
+      .from('feedback')
+      .insert([{ message, created_at: new Date().toISOString() }])
+
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
     }
 
-    const timestamp = new Date().toISOString()
-    const feedbackEntry = `${timestamp}: ${feedback}\n`
-
-    const filePath = path.join(process.cwd(), 'feedback.log')
-    await fs.appendFile(filePath, feedbackEntry, 'utf8')
-
-    return NextResponse.json({ message: 'Feedback received' }, { status: 200 })
+    console.log('Feedback inserted successfully:', data)
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error saving feedback:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error in feedback submission:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

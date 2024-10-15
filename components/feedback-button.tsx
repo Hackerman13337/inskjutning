@@ -25,14 +25,26 @@ export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackBut
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!feedback.trim()) {
+      toast({
+        title: "Error",
+        description: "Feedback cannot be empty",
+      })
+      return
+    }
+    console.log('Submitting feedback:', feedback)
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback }),
+        body: JSON.stringify({ message: feedback }), // Changed 'feedback' to 'message'
       })
 
+      console.log('Response status:', response.status) // Logging the response status
+
       if (response.ok) {
+        const data = await response.json()
+        console.log('Response data:', data) // Logging the response data
         toast({
           title: "Feedback Sent",
           description: "Thank you for your feedback!",
@@ -40,7 +52,9 @@ export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackBut
         setFeedback('')
         setIsOpen(false)
       } else {
-        throw new Error('Failed to submit feedback')
+        const errorData = await response.json()
+        console.error('Error response:', errorData) // Logging error response
+        throw new Error(errorData.error || 'Failed to submit feedback')
       }
     } catch (error) {
       console.error('Error submitting feedback:', error)
@@ -72,7 +86,7 @@ export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackBut
             />
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsOpen(false)}>Avbryt</Button>
-              <Button type="submit">Skicka</Button>
+              <Button type="submit" disabled={!feedback.trim()}>Skicka</Button>
             </div>
           </form>
         </div>
