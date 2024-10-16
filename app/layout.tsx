@@ -24,8 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Header />
+        <FeedbackButton type="feedback" />
+        <FeedbackButton type="contact" />
         {children}
-        <FeedbackButton variant="icon" />
       </body>
     </html>
   )
