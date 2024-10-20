@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import JsonLd from '@/components/JsonLd'
+import { JsonLd } from '@/components/JsonLd'
 
 export const metadata: Metadata = {
   title: 'Hur man ställer in ett Hawke-sikte - Enkel guide med inskjutningsverktyg',

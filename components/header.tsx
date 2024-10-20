@@ -18,7 +18,6 @@ export function Header() {
   const menuItems = [
     { name: 'Inskjutningsverktyg', href: '/' },
     { name: 'Måltavlor', href: '/maltavlor' },
-    { name: 'Kontakt', component: <FeedbackButton variant="menu-item" title="Kontakta oss" /> }
   ]
 
   const Logo = () => (
@@ -46,26 +45,16 @@ export function Header() {
             <nav className="flex space-x-8 items-center">
               {menuItems.map((item) => (
                 <div key={item.name} className="flex items-center">
-                  {item.component ? (
-                    <div className="text-gray-600 hover:text-gray-900 cursor-pointer">
-                      {item.component}
-                    </div>
-                  ) : (
-                    <Link 
-                      href={item.href!} 
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      {item.name}
-                    </Link>
-                  )}
+                  <Link 
+                    href={item.href} 
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    {item.name}
+                  </Link>
                 </div>
               ))}
+              <FeedbackButton variant="menu-item">Lämna feedback</FeedbackButton>
             </nav>
-
-            {/* Feedback button */}
-            <div className="ml-4">
-              <FeedbackButton variant="icon" />
-            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -90,21 +79,18 @@ export function Header() {
             <ul className="space-y-6">
               {menuItems.map((item, index) => (
                 <li key={item.name} className={`transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{transitionDelay: `${index * 100}ms`}}>
-                  {item.component ? (
-                    <div onClick={closeMenu} className="text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors">
-                      {item.component}
-                    </div>
-                  ) : (
-                    <Link 
-                      href={item.href!} 
-                      className="text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors" 
-                      onClick={closeMenu}
-                    >
-                      {item.name}
-                    </Link>
-                  )}
+                  <Link 
+                    href={item.href} 
+                    className="text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors" 
+                    onClick={closeMenu}
+                  >
+                    {item.name}
+                  </Link>
                 </li>
               ))}
+              <li className={`transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{transitionDelay: `${menuItems.length * 100}ms`}}>
+                <FeedbackButton variant="menu-item">Lämna feedback</FeedbackButton>
+              </li>
             </ul>
           </nav>
         </div>
