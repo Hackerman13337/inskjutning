@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { MessageSquarePlus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,11 +8,11 @@ import { createPortal } from 'react-dom'
 import { useToast } from '@/hooks/use-toast'
 
 interface FeedbackButtonProps {
-  variant?: 'icon' | 'menu-item'
-  className?: string
+  variant: 'menu-item' | 'icon';
+  children?: ReactNode;
 }
 
-export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackButtonProps) {
+export function FeedbackButton({ variant, children }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [mounted, setMounted] = useState(false)
@@ -102,16 +102,16 @@ export function FeedbackButton({ variant = 'icon', className = '' }: FeedbackBut
             onClick={handleOpenFeedback}
             className={`shadow-lg hover:shadow-xl transition-all duration-300
                        rounded-full w-14 h-14 sm:w-16 sm:h-16
-                       flex items-center justify-center ${className}`}
+                       flex items-center justify-center`}
           >
             <MessageSquarePlus className="w-7 h-7 sm:w-8 sm:h-8" />
           </Button>
         </div>
       )}
       {variant === 'menu-item' && (
-        <Button onClick={handleOpenFeedback} className={`w-full justify-center py-6 ${className}`}>
+        <Button onClick={handleOpenFeedback} className="w-full justify-center py-6">
           <MessageSquarePlus className="mr-2 h-5 w-5" />
-          <span>Lämna feedback</span>
+          <span>{children}</span>
         </Button>
       )}
 
