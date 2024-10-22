@@ -25,7 +25,7 @@ export default function CalculatorForm() {
   const [horizontalDirection, setHorizontalDirection] = useState<"left" | "right">("right")
   const [verticalDirection, setVerticalDirection] = useState<"up" | "down">("up")
   const [distance, setDistance] = useState("")
-  const [adjustmentType, setAdjustmentType] = useState<"MOA" | "MIL">("MOA")
+  const [adjustmentType, setAdjustmentType] = useState<"1/8 MOA" | "1/4 MOA" | "1/2 MOA" | "1 MOA" | "0.1 MIL">("1/4 MOA")
   const [result, setResult] = useState<CalculationResult | null>(null)
   const [isResultModalOpen, setIsResultModalOpen] = useState(false)
   const [errors, setErrors] = useState<{
@@ -71,7 +71,24 @@ export default function CalculatorForm() {
     const Av = parseFloat(verticalDeviation) * (verticalDirection === "down" ? -1 : 1)
     const D = parseFloat(distance)
     
-    const clicksPerCm = adjustmentType === "MOA" ? 1 / 0.725 : 1.0
+    let clicksPerCm
+    switch (adjustmentType) {
+      case "1/8 MOA":
+        clicksPerCm = 1 / 0.3625
+        break
+      case "1/4 MOA":
+        clicksPerCm = 1 / 0.725
+        break
+      case "1/2 MOA":
+        clicksPerCm = 1 / 1.45
+        break
+      case "1 MOA":
+        clicksPerCm = 1 / 2.9
+        break
+      case "0.1 MIL":
+        clicksPerCm = 1.0
+        break
+    }
     
     const Nh = Math.round((Ah * clicksPerCm) / (D / 100))
     const Nv = Math.round((Av * clicksPerCm) / (D / 100))
@@ -229,14 +246,17 @@ export default function CalculatorForm() {
             <Label htmlFor="adjustmentType">Välj justeringsenhet (MOA/MIL)</Label>
             <Select
               value={adjustmentType}
-              onValueChange={(value: "MOA" | "MIL") => setAdjustmentType(value)}
+              onValueChange={(value: "1/8 MOA" | "1/4 MOA" | "1/2 MOA" | "1 MOA" | "0.1 MIL") => setAdjustmentType(value)}
             >
               <SelectTrigger id="adjustmentType">
                 <SelectValue placeholder="Välj justeringstyp" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="MOA">1/4 MOA</SelectItem>
-                <SelectItem value="MIL">0.1 MIL</SelectItem>
+                <SelectItem value="1/8 MOA">1/8 MOA</SelectItem>
+                <SelectItem value="1/4 MOA">1/4 MOA</SelectItem>
+                <SelectItem value="1/2 MOA">1/2 MOA</SelectItem>
+                <SelectItem value="1 MOA">1 MOA</SelectItem>
+                <SelectItem value="0.1 MIL">0.1 MIL</SelectItem>
               </SelectContent>
             </Select>
           </div>

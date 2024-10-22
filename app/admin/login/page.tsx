@@ -1,49 +1,76 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
-export default function LoginPage() {
+export default function Login() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const supabase = createClientComponentClient()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Login page: Session:', !!session)
+      if (session) {
+        router.push('/admin/dashboard')
+      }
+    }
+    checkUser()
+  }, [supabase, router])
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Sending password:', password)
-    const response = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    })
-
-    if (response.ok) {
+    setError(null)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
       router.push('/admin/dashboard')
-    } else {
-      alert('Incorrect password')
+    } catch (error) {
+      console.error('Error logging in:', error)
+      setError('Failed to log in. Please check your credentials.')
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md mt-[-10vh]">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+          <CardTitle>Admin Login</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full"
-              placeholder="Enter password"
-            />
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                required
+              />
+            </div>
+            <div>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                required
+              />
+            </div>
+            <div>
+              <Button type="submit">Log in</Button>
+            </div>
+            {error && <p className="text-red-500">{error}</p>}
           </form>
         </CardContent>
       </Card>
