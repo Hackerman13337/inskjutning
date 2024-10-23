@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
-import { notFound } from 'next/navigation'
 import { JsonLd } from '@/components/JsonLd'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
@@ -31,15 +30,11 @@ export async function generateMetadata({ params }: ArticleProps): Promise<Metada
 
 export default async function ArticlePage({ params }: ArticleProps) {
   const supabase = createServerComponentClient({ cookies })
-  const { data: article, error } = await supabase
+  const { data: article } = await supabase
     .from('articles')
     .select('*')
     .eq('slug', params.slug)
     .single()
-
-  if (!article) {
-    notFound()
-  }
 
   const jsonLd = {
     "@context": "https://schema.org",

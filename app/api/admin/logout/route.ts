@@ -1,13 +1,11 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(_request: NextRequest) {
-  // Clear the admin_token cookie
-  cookies().delete('admin_token')
-
-  // Return a response indicating successful logout
-  return NextResponse.json({ message: 'Logged out successfully' }, { status: 200 })
+export async function POST() {
+  const supabase = createRouteHandlerClient({ cookies })
+  await supabase.auth.signOut()
+  return NextResponse.json({ success: true })
 }
 
 // Handle GET requests
