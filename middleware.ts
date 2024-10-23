@@ -1,21 +1,24 @@
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    const adminToken = request.cookies.get('admin_token')?.value
-    
-    if (request.nextUrl.pathname === '/admin/login') {
-      return NextResponse.next()
-    }
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
+  const { data: { session } } = await supabase.auth.getSession()
 
-    if (!adminToken) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (!session && req.nextUrl.pathname !== '/admin/login') {
+      return NextResponse.redirect(new URL('/admin/login', req.url))
+    }
+    if (session && req.nextUrl.pathname === '/admin/login') {
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
   }
-  return NextResponse.next()
+
+  return res
 }
 
 export const config = {
-  matcher: '/admin/:path*',
+  matcher: ['/admin/:path*'],
 }

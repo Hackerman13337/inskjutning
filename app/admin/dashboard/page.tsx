@@ -1,36 +1,36 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { FeedbackList } from '@/components/feedback-list'
-import { useEffect } from 'react'
+import { ArticleList } from '@/components/article-list'
 
-export default function AdminDashboard() {
-  const router = useRouter()
+export default function AdminDashboardPage() {
+  const [activeTab, setActiveTab] = useState<'feedback' | 'articles'>('articles')
 
+  // Använd en effekt för att uppdatera komponenten när den monteras
   useEffect(() => {
-    console.log('AdminDashboard mounted')
+    // Detta kommer att tvinga en omrendering av ArticleList
   }, [])
-
-  const handleLogout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' })
-    router.push('/admin')
-  }
-
-  console.log('Rendering AdminDashboard')
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       <Button 
-        onClick={handleLogout}
-        className="bg-red-500 text-white p-2 mb-4"
+        onClick={() => setActiveTab('feedback')}
+        variant={activeTab === 'feedback' ? 'default' : 'outline'}
+        className="mr-2"
       >
-        Logga ut
+        Feedback
       </Button>
-      <div>
-        <FeedbackList />
-      </div>
+      <Button 
+        onClick={() => setActiveTab('articles')}
+        variant={activeTab === 'articles' ? 'default' : 'outline'}
+      >
+        Artiklar
+      </Button>
+      {activeTab === 'feedback' && <FeedbackList />}
+      {activeTab === 'articles' && <ArticleList key={Date.now()} />}
     </div>
   )
 }

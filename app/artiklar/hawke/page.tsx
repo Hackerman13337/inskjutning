@@ -104,7 +104,7 @@ export default function HawkeArticle() {
           du behöver justera ditt sikte. Det sparar tid och ammunition, samtidigt som det ökar precisionen.
         </p>
         
-        <Link href="/" className="inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300">
+        <Link href="/" className="inline-block bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-800 transition duration-300">
           Gå till inskjutningsverktyget
         </Link>
         

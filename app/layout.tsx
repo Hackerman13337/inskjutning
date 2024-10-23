@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     icon: '/image/logofav.png',
     apple: '/image/logofav.png',
   },
+  // Lägg till detta nya fält
+  verification: {
+    google: 'uGHOPnZ4WuhvRg9PCtS3d2IMMCcKMzYHE85_IfJ_QIg',
+  },
+  // Andra metadata-fält kan finnas här
 }
 
 export default function RootLayout({
