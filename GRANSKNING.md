@@ -1,11 +1,16 @@
 # Granskning av Inskjutning — buggar och förbättringsförslag
 
+> **Föråldrad i delar.** Supabase är borttaget ur projektet (17 sep 2026) sedan
+> databasen visat sig ha varit pausad sedan 6 dec 2024. Allt som rör admin,
+> feedback, kontaktformulär, RLS och databasartiklar i avsnitt 1, 2, 4 och 7 är
+> därför inte längre aktuellt. Avsnitt 3, 5 och 6 gäller fortfarande.
+
 Genomgång 2026-09-06 av hela kodbasen: verktyget, innehållssidor, API, admin,
 konfiguration och beroenden.
 
 **Status:** avsnitt 1 och 2 (säkerhet och det som var trasigt) är åtgärdade i
 koden. Ett steg återstår som bara kan göras i Supabase — se 1.6 och
-[SUPABASE-RLS.md](SUPABASE-RLS.md). Avsnitt 3–7 är kvar.
+SUPABASE-RLS.md (borttagen). Avsnitt 3–7 är kvar.
 
 Prioritet: **P0** = åtgärda före nästa deploy · **P1** = trasigt eller
 vilseledande för användaren · **P2** = kvalitet/städning · **P3** = idéer.
@@ -51,7 +56,7 @@ Anon-nyckeln ligger i klartext i klientpaketet (verifierat). Vem som helst kan
 kopiera den och prata direkt med databasen, helt utan att gå via sajtens API.
 Inloggningskontrollerna ovan skyddar ytterdörren; RLS skyddar köksdörren.
 **Båda behövs.** Färdig SQL och kontrollkommandon finns i
-[SUPABASE-RLS.md](SUPABASE-RLS.md).
+SUPABASE-RLS.md (borttagen).
 
 ### ⚠️ 1.7 KVAR — kvarvarande sårbarheter kräver större flytt
 - `next` (hög): DoS via Image Optimizer `remotePatterns`. Gäller bara

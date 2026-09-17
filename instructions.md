@@ -69,14 +69,14 @@ lägena. Mobilen är utgångspunkten — tavlan ska gå att träffa med fingret.
 ## Struktur
 
 ```
-app/            Sidor (App Router). Startsidan innehåller verktyget.
+app/            Sidor (App Router), alla statiska. Startsidan har verktyget.
 components/     calculator, target-plot, adjustment-result, shot-log + ui/
 lib/            ballistics.ts (ren beräkning), storage.ts (localStorage)
 ```
 
-Artiklar, feedback och admin använder Supabase och kräver
-`NEXT_PUBLIC_SUPABASE_URL` och `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Verktyget
-självt fungerar utan dem.
+Sajten har ingen backend och inga miljövariabler. Allt är statiskt: verktyget
+räknar i webbläsaren, artiklarna ligger i koden och måltavlorna är färdiga
+PDF:er.
 
 ## Teknik
 

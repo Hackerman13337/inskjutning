@@ -11,7 +11,8 @@
  *  - Byggfiler under /_next/static: cachen först. Filnamnen innehåller en hash
  *    och ändras vid varje bygge, så en cachad fil kan aldrig bli inaktuell.
  *  - Bilder, ikoner och måltavlor: cachen först.
- *  - API, admin och allt mot andra domäner: aldrig cache.
+ *  - Andra domäner: aldrig cache. Spärren för /api och /admin står kvar även
+ *    sedan de vägarna tagits bort, som skydd om något dynamiskt läggs till igen.
  */
 
 const VERSION = 'v1'
