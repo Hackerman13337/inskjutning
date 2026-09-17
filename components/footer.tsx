@@ -4,7 +4,6 @@ const links = [
   { name: 'Verktyget', href: '/' },
   { name: 'Måltavlor', href: '/maltavlor' },
   { name: 'Artiklar', href: '/artiklar' },
-  { name: 'Kontakt', href: '/kontakt' },
 ]
 
 export function Footer() {

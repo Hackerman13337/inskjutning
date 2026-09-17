@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 
 import { Button } from './ui/button'
-import { FeedbackButton } from './feedback-button'
 import { ThemeToggle } from './theme-toggle'
 import { cn } from '@/lib/utils'
 
@@ -14,7 +13,6 @@ const menuItems = [
   { name: 'Verktyget', href: '/' },
   { name: 'Måltavlor', href: '/maltavlor' },
   { name: 'Artiklar', href: '/artiklar' },
-  { name: 'Kontakt', href: '/kontakt' },
 ]
 
 function Logo({ className }: { className?: string }) {
@@ -84,9 +82,6 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1">
-          <div className="hidden md:block">
-            <FeedbackButton variant="nav">Feedback</FeedbackButton>
-          </div>
           <ThemeToggle />
           <Button
             variant="ghost"
@@ -128,9 +123,6 @@ export function Header() {
                 </li>
               )
             })}
-            <li className="pt-1">
-              <FeedbackButton variant="menu-item">Lämna feedback</FeedbackButton>
-            </li>
           </ul>
         </nav>
       </div>

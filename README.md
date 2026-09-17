@@ -74,15 +74,9 @@ npm run dev
 
 Öppna [http://localhost:3000](http://localhost:3000).
 
-Själva verktyget fungerar utan konfiguration. Artiklar, feedback och admin
-använder Supabase och kräver följande variabler i `.env.local`:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-```
-
-Saknas de går bygget ändå igenom — artikellistan visas bara som tom.
+Inga miljövariabler, ingen databas och inget konto behövs. Hela sajten är
+statisk: varje sida byggs vid deploy och allt som sker därefter sker i
+besökarens webbläsare.
 
 ## Säkerhetskopiering
 
@@ -128,9 +122,6 @@ En ny artikel:
 
 Skicka med `extraJsonLd` för `HowTo` eller `FAQPage` när artikeln passar det —
 det är de två typerna som ger utökade sökresultat.
-
-Artiklar som skrivs i admin hamnar i databasen och visas på samma lista via
-`/artiklar/[slug]`.
 
 ## Måltavlor
 
@@ -185,11 +176,10 @@ npm run test:targets   # måltavlornas mått i PDF:erna
 ## Kodstruktur
 
 ```
-app/                     Sidor (App Router)
+app/                     Sidor (App Router), alla statiska
   page.tsx               Startsida med verktyget, "så gör du" och FAQ
   maltavlor/             Utskrivbara måltavlor
-  artiklar/, kontakt/    Innehållssidor
-  admin/, api/           Inloggningsskyddad admin och API (Supabase)
+  artiklar/              Artiklarna, en mapp per artikel
 components/
   calculator.tsx         Verktyget: profiler, skott, inställningar, logg
   target-plot.tsx        Interaktiv SVG-måltavla
@@ -217,4 +207,8 @@ tests/
 
 ## Teknik
 
-Next.js 14 (App Router), TypeScript, Tailwind CSS, Radix UI/shadcn, Supabase.
+Next.js 14 (App Router), TypeScript, Tailwind CSS, Radix UI/shadcn.
+
+Sajten har ingen backend. Verktygets beräkningar, vapenprofiler och logg ligger
+helt i webbläsaren, artiklarna i koden och måltavlorna som färdiga PDF:er. Det
+finns inget konto som kan pausas och inga nycklar som kan läcka.
