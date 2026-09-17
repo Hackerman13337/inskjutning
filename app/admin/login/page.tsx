@@ -17,7 +17,6 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('Login page: Session:', !!session)
       if (session) {
         router.push('/admin/dashboard')
       }
@@ -36,16 +35,16 @@ export default function Login() {
       if (error) throw error
       router.push('/admin/dashboard')
     } catch (error) {
-      console.error('Error logging in:', error)
-      setError('Failed to log in. Please check your credentials.')
+      console.error('Inloggningen misslyckades:', error)
+      setError('Inloggningen misslyckades. Kontrollera e-post och lösenord.')
     }
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex min-h-[70vh] items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
+          <CardTitle>Logga in</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -54,7 +53,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
+                placeholder="E-post"
                 required
               />
             </div>
@@ -63,14 +62,14 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
+                placeholder="Lösenord"
                 required
               />
             </div>
             <div>
-              <Button type="submit">Log in</Button>
+              <Button type="submit" className="w-full">Logga in</Button>
             </div>
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
           </form>
         </CardContent>
       </Card>

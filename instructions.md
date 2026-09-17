@@ -1,72 +1,83 @@
-# Project Overview:
-- Hemsidan är ett verktyg som hjälper skyttar att snabbt beräkna hur många klick de behöver justera sitt kikarsikte baserat på avståndet till målet och träffpunktens avvikelse från mitten. Verktyget är designat för att vara enkelt och direkt, utan backend eller avancerade integrationer, med allt som hanteras i frontend.
+# Inskjutning — projektöversikt
 
-# Core Functionalities:
-- Inskjutnings- och träffavståndsinmatning:
+Verktyg som räknar om träffpunktens avvikelse till antal klick på kikarsiktets
+höjd- och sidoratt. All beräkning sker i webbläsaren, utan backend.
 
-  -   Avstånd till målet (meter): Användaren matar in avståndet till målet i meter.
-  -   Avvikelse från mitten (cm): Användaren anger hur mycket träffen avviker från mitten i centimeter, både horisontellt och vertikalt.
-  -   Kikarsiktets justering (klick per cm eller MOA): Användaren kan välja vilken typ av justering de använder:
-        -   1 cm per klick på 100 meter.
-        -   MOA (t.ex. 0,7 cm per klick på 100 meter).
-  -   Beräkningsknapp:
+## Kärnfunktioner
 
-- När användaren har fyllt i sina värden, trycker de på "Beräkna" och får en omedelbar uträkning av hur många klick som krävs för att justera kikarsiktet.
-- Resultatvisning:
-  -   Antal klick för horisontell justering: Visar hur många klick användaren behöver justera siktet i sidled.
-  -   Antal klick för vertikal justering: Visar hur många klick användaren behöver justera siktet i höjdled.
-  -   Möjlighet att återställa formuläret för nya beräkningar.
+- **Interaktiv måltavla** (`components/target-plot.tsx`)
+  SVG i centimeterkoordinater. Tryck lägger ett skott, dra flyttar det, zoomen
+  går mellan ±5 och ±80 cm. Y-axeln vänds vid ritning (positivt = uppåt).
+- **Ett skott eller skottgrupp**
+  I gruppläge läggs upp till 10 skott in och justeringen räknas mot gruppens
+  medelträffpunkt (MPI). Gruppstorleken visas i cm och MOA.
+- **Klickvärden** (`lib/ballistics.ts`)
+  1/8, 1/4, 1/3, 1/2 och 1 MOA, 0,05 och 0,1 MIL, cm-baserade sikten samt eget
+  värde i cm per klick på 100 m.
+- **Önskad träffpunkt**
+  Justeringen behöver inte gå mot mitten — man kan be om t.ex. 3 cm högt.
+- **Vapenprofiler och logg** (`lib/storage.ts`)
+  Sparas i localStorage. Profilen håller klickvärde, standardavstånd och önskad
+  träffpunkt, och uppdateras automatiskt när inställningarna ändras.
+- **Säkerhetskopiering** (`lib/backup.ts`, `components/backup-panel.tsx`)
+  Export och import av allt till en JSON-fil. Importen granskar varje post och
+  slår ihop utan att skriva över befintlig data. Testas med
+  `npm run test:backup`.
 
--  Design:
-  -   Minimalistisk design: Fokuserad på enkelhet, med ett rent gränssnitt som gör det lätt att mata in och få beräkningar snabbt.
-  -   Färgskala: Neutral färgpalett med visuellt markerade knappar och resultat.
-Responsiv design: Anpassad för att fungera lika bra på datorer som på mobila enheter.
-  -   Inmatningsformulär: Centralt placerat, direkt synligt på startsidan för enkel användning.
-  -   Beräkningsresultat: Visas direkt under inmatningsformuläret, utan att användaren behöver ladda om sidan.
-  -   Användarflöde:
+## Beräkning
 
-Steg 1: Användaren går till startsidan och ser en kort förklaring om hur verktyget fungerar.
-Steg 2: Användaren fyller i avstånd till målet, träffens avvikelse från mitten, samt vilken typ av kikarsiktejustering som används.
-Steg 3: Användaren trycker på "Beräkna".
-Steg 4: Resultatet visas omedelbart, och användaren ser hur många klick de ska justera siktet i både höjd- och sidled.
-Tekniska specifikationer:
+Ett klick flyttar träffpunkten en fast vinkel:
 
-Frontend: Sidan byggs med Next.js 14.2 för snabb interaktivitet och smidiga användarupplevelser.
-CSS/Design: Tailwind CSS används för att skapa en enkel, responsiv och modern design.
-Beräkningar: All logik och beräkningar hanteras direkt i frontend för omedelbar återkoppling utan behov av en backend.
+```
+cm per klick = klickvärde i cm på 100 m × (avstånd / 100)
+antal klick  = (önskad träffpunkt − medelträffpunkt) / cm per klick
+```
 
-# File structure
-INSKJU
-├── .next
-├── app
-│   ├── fonts
-│   ├── favicon.ico
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── components
-│   └── ui
-│       ├── alert.tsx
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── dialog.tsx
-│       ├── form.tsx
-│       ├── input.tsx
-│       ├── label.tsx
-│       ├── popover.tsx
-│       ├── select.tsx
-│       └── tooltip.tsx
-├── lib
-├── node_modules
-├── .eslintrc.json
-├── .gitignore
-├── components.json
-├── instructions.md
-├── next-env.d.ts
-├── next.config.mjs
-├── package-lock.json
-├── package.json
-├── postcss.config.js
-├── README.md
-├── tailwind.config.ts
-└── tsconfig.json
+Positivt antal klick = höger respektive upp. 1 MOA = 2,908882 cm på 100 m,
+1 MIL = 10 cm på 100 m. Restfelet efter avrundning till hela klick visas för
+användaren.
+
+## PWA
+
+Sajten är installerbar på hemskärmen och fungerar utan täckning.
+`app/manifest.ts` beskriver appen, `public/sw.js` sköter cachningen (sidor:
+nätet först, byggfiler: cachen först, API/admin/andra domäner: aldrig cache) och
+`components/install-prompt.tsx` visar installationstipset — knapp på Android,
+instruktion om dela-knappen på iOS. Service workern registreras bara i
+produktionsbygget. Reglerna testas med `npm run test:sw`.
+
+## Måltavlor
+
+Fyra utskrivbara A4-tavlor i `public/maltavlor/`, genererade av
+`scripts/generate-targets.py` ovanpå den beroendefria PDF-skrivaren
+`scripts/pdfkit.py`. Måtten måste vara exakta — man räknar rutor på papperet
+och matar in centimeter i verktyget — så varje tavla har ett kontrollmått på
+10 cm, och `npm run test:targets` mäter PDF:erna för att verifiera rutstorlek,
+sidformat och att rutnäten går jämnt ut i kanterna.
+
+`components/target-gallery.tsx` visar tavlorna med en storvisning. Layouten är
+tvåspaltig på breda skärmar eftersom en stående A4 annars begränsas av
+fönsterhöjden.
+
+## Design
+
+Mörkt fältläge som standard enligt systeminställning, med ljust läge. Färger
+ligger som HSL-variabler i `app/globals.css`; måltavlan har egna tokens
+(`--target-face`, `--target-line`, `--shot`, `--mpi`) så att den fungerar i båda
+lägena. Mobilen är utgångspunkten — tavlan ska gå att träffa med fingret.
+
+## Struktur
+
+```
+app/            Sidor (App Router). Startsidan innehåller verktyget.
+components/     calculator, target-plot, adjustment-result, shot-log + ui/
+lib/            ballistics.ts (ren beräkning), storage.ts (localStorage)
+```
+
+Artiklar, feedback och admin använder Supabase och kräver
+`NEXT_PUBLIC_SUPABASE_URL` och `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Verktyget
+självt fungerar utan dem.
+
+## Teknik
+
+Next.js 14 (App Router), TypeScript, Tailwind CSS, Radix UI/shadcn.
