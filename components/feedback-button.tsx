@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom'
 import { useToast } from '@/hooks/use-toast'
 
 interface FeedbackButtonProps {
-  variant: 'menu-item' | 'icon';
+  variant: 'menu-item' | 'icon' | 'nav';
   children?: ReactNode;
 }
 
@@ -23,16 +23,24 @@ export function FeedbackButton({ variant, children }: FeedbackButtonProps) {
     return () => setMounted(false)
   }, [])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isOpen])
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!feedback.trim()) {
       toast({
-        title: "Error",
-        description: "Feedback cannot be empty",
+        title: 'Skriv något först',
+        description: 'Feedbacken kan inte vara tom.',
       })
       return
     }
-    console.log('Submitting feedback:', feedback)
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
@@ -40,27 +48,22 @@ export function FeedbackButton({ variant, children }: FeedbackButtonProps) {
         body: JSON.stringify({ message: feedback }), // Changed 'feedback' to 'message'
       })
 
-      console.log('Response status:', response.status) // Logging the response status
-
       if (response.ok) {
-        const data = await response.json()
-        console.log('Response data:', data) // Logging the response data
+        await response.json()
         toast({
-          title: "Feedback Sent",
-          description: "Thank you for your feedback!",
+          title: 'Tack för din feedback!',
+          description: 'Den hjälper till att göra verktyget bättre.',
         })
         setFeedback('')
         setIsOpen(false)
       } else {
-        const errorData = await response.json()
-        console.error('Error response:', errorData) // Logging error response
-        throw new Error(errorData.error || 'Failed to submit feedback')
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.error || 'Kunde inte skicka feedbacken')
       }
-    } catch (error) {
-      console.error('Error submitting feedback:', error)
+    } catch {
       toast({
-        title: "An error occurred",
-        description: "Failed to send your feedback. Please try again later.",
+        title: 'Det gick inte att skicka',
+        description: 'Försök igen om en stund.',
       })
     }
   }
@@ -68,21 +71,31 @@ export function FeedbackButton({ variant, children }: FeedbackButtonProps) {
   const handleOpenFeedback = () => setIsOpen(true)
 
   const feedbackModal = (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onClick={() => setIsOpen(false)}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card text-card-foreground shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Lämna feedback"
+      >
         <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Lämna feedback</h2>
-            <Button variant="ghost" onClick={() => setIsOpen(false)}>
-              <X className="w-6 h-6" />
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Lämna feedback</h2>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Stäng">
+              <X className="h-5 w-5" />
             </Button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Berätta för oss vad du tycker eller vilka funktioner du skulle vilja se..."
-              className="min-h-[200px]"
+              placeholder="Berätta vad du tycker eller vilka funktioner du saknar..."
+              className="min-h-[160px]"
+              autoFocus
             />
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsOpen(false)}>Avbryt</Button>
@@ -109,8 +122,19 @@ export function FeedbackButton({ variant, children }: FeedbackButtonProps) {
         </div>
       )}
       {variant === 'menu-item' && (
-        <Button onClick={handleOpenFeedback} className="w-full justify-center py-6">
+        <Button onClick={handleOpenFeedback} variant="secondary" className="h-12 w-full justify-center">
           <MessageSquarePlus className="mr-2 h-5 w-5" />
+          <span>{children}</span>
+        </Button>
+      )}
+      {variant === 'nav' && (
+        <Button
+          onClick={handleOpenFeedback}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <MessageSquarePlus className="mr-1.5 h-4 w-4" />
           <span>{children}</span>
         </Button>
       )}

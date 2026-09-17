@@ -1,7 +1,3 @@
-'use client'
-
-import { useEffect } from 'react'
-
 interface JsonLdData {
   '@context': string
   '@type': string
@@ -12,17 +8,16 @@ interface JsonLdProps {
   data: JsonLdData
 }
 
+/**
+ * Skriver ut strukturerad data direkt i HTML:en. Tidigare lades taggen in med
+ * useEffect efter att sidan renderats, vilket innebar att sökmotorer som inte
+ * kör JavaScript aldrig såg den.
+ */
 export function JsonLd({ data }: JsonLdProps) {
-  useEffect(() => {
-    const script = document.createElement('script')
-    script.type = 'application/ld+json'
-    script.text = JSON.stringify(data)
-    document.head.appendChild(script)
-
-    return () => {
-      document.head.removeChild(script)
-    }
-  }, [data])
-
-  return null
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  )
 }

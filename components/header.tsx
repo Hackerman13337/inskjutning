@@ -1,99 +1,138 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { FeedbackButton } from './feedback-button'
-import { Button } from './ui/button'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 
-// Justera detta värde för att flytta logotypen på stora skärmar (använd positiva värden för att flytta åt höger)
-const LOGO_LEFT_POSITION = '600px'  // t.ex. '0px', '20px', '40px', etc.
+import { Button } from './ui/button'
+import { FeedbackButton } from './feedback-button'
+import { ThemeToggle } from './theme-toggle'
+import { cn } from '@/lib/utils'
+
+const menuItems = [
+  { name: 'Verktyget', href: '/' },
+  { name: 'Måltavlor', href: '/maltavlor' },
+  { name: 'Artiklar', href: '/artiklar' },
+  { name: 'Kontakt', href: '/kontakt' },
+]
+
+function Logo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn('h-8 w-8', className)}
+      aria-hidden="true"
+    >
+      <circle cx="24" cy="24" r="21" className="stroke-foreground/25" strokeWidth="2" />
+      <circle cx="24" cy="24" r="13" className="stroke-foreground/40" strokeWidth="2" />
+      <circle cx="24" cy="24" r="4.5" className="fill-primary" />
+      <path d="M24 1v10M24 37v10M1 24h10M37 24h10" className="stroke-foreground/60" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const closeMenu = () => setIsMenuOpen(false)
 
-  const menuItems = [
-    { name: 'Inskjutningsverktyg', href: '/' },
-    { name: 'Måltavlor', href: '/maltavlor' },
-  ]
+  // Stäng menyn när man navigerar och lås sidan bakom den öppna menyn.
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [pathname])
 
-  const Logo = () => (
-    <svg width="40" height="40" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="25" cy="25" r="23" stroke="black" strokeWidth="2"></circle>
-      <circle cx="25" cy="25" r="5" fill="black"></circle>
-      <line x1="2" y1="25" x2="48" y2="25" stroke="black" strokeWidth="2"></line>
-      <line x1="25" y1="2" x2="25" y2="48" stroke="black" strokeWidth="2"></line>
-    </svg>
-  )
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMenuOpen])
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4 lg:justify-center">
-          {/* Logo */}
-          <div className="flex-shrink-0 lg:absolute" style={{ left: LOGO_LEFT_POSITION }}>
-            <Link href="/">
-              <Logo />
-            </Link>
-          </div>
+    <header
+      className="sticky top-0 z-50 border-b border-border/70 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md"
+    >
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+        <Link href="/" className="flex items-center gap-2.5" onClick={closeMenu}>
+          <Logo />
+          <span className="text-base font-semibold tracking-tight">Inskjutning</span>
+        </Link>
 
-          <div className="hidden md:flex items-center justify-center flex-grow">
-            {/* Desktop menu */}
-            <nav className="flex space-x-8 items-center">
-              {menuItems.map((item) => (
-                <div key={item.name} className="flex items-center">
-                  <Link 
-                    href={item.href} 
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    {item.name}
-                  </Link>
-                </div>
-              ))}
-              <FeedbackButton variant="menu-item">Lämna feedback</FeedbackButton>
-            </nav>
-          </div>
+        <nav className="hidden items-center gap-1 md:flex">
+          {menuItems.map((item) => {
+            const isActive =
+              item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+                )}
+              >
+                {item.name}
+              </Link>
+            )
+          })}
+        </nav>
 
-          {/* Mobile menu button */}
-          <Button variant="ghost" className="md:hidden" onClick={toggleMenu}>
-            {isMenuOpen ? <X /> : <Menu />}
+        <div className="flex items-center gap-1">
+          <div className="hidden md:block">
+            <FeedbackButton variant="nav">Feedback</FeedbackButton>
+          </div>
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMenuOpen((v) => !v)}
+            aria-label={isMenuOpen ? 'Stäng meny' : 'Öppna meny'}
+            aria-expanded={isMenuOpen}
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
-      
-      {/* Fullscreen mobile menu */}
-      <div className={`fixed inset-0 bg-white z-50 transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'} md:hidden`}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center mb-8">
-            <Link href="/" onClick={closeMenu}>
-              <Logo />
-            </Link>
-            <Button variant="ghost" onClick={closeMenu}>
-              <X />
-            </Button>
-          </div>
-          <nav>
-            <ul className="space-y-6">
-              {menuItems.map((item, index) => (
-                <li key={item.name} className={`transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{transitionDelay: `${index * 100}ms`}}>
-                  <Link 
-                    href={item.href} 
-                    className="text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors" 
+
+      {/* Mobilmeny */}
+      <div
+        className={cn(
+          'fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] z-40 border-b border-border bg-background transition-all duration-200 md:hidden',
+          isMenuOpen ? 'visible opacity-100' : 'invisible -translate-y-2 opacity-0'
+        )}
+      >
+        <nav className="mx-auto max-w-6xl px-4 py-3">
+          <ul className="space-y-1">
+            {menuItems.map((item) => {
+              const isActive =
+                item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
                     onClick={closeMenu}
+                    className={cn(
+                      'block rounded-lg px-3 py-3 text-base font-medium transition-colors',
+                      isActive ? 'bg-accent text-foreground' : 'text-muted-foreground'
+                    )}
                   >
                     {item.name}
                   </Link>
                 </li>
-              ))}
-              <li className={`transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{transitionDelay: `${menuItems.length * 100}ms`}}>
-                <FeedbackButton variant="menu-item">Lämna feedback</FeedbackButton>
-              </li>
-            </ul>
-          </nav>
-        </div>
+              )
+            })}
+            <li className="pt-1">
+              <FeedbackButton variant="menu-item">Lämna feedback</FeedbackButton>
+            </li>
+          </ul>
+        </nav>
       </div>
     </header>
   )

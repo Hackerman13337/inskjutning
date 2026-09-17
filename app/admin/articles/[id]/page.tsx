@@ -38,9 +38,16 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         const response = await fetch(`/api/articles/${params.id}`)
         if (response.ok) {
           const data = await response.json()
-          setArticle(data)
+          // Databasen använder meta_description, formuläret metaDescription.
+          // Utan den här översättningen kom fältet alltid upp tomt.
+          setArticle({
+            title: data.title ?? '',
+            slug: data.slug ?? '',
+            content: data.content ?? '',
+            metaDescription: data.meta_description ?? '',
+          })
         } else {
-          throw new Error('Failed to fetch article')
+          throw new Error('Kunde inte hämta artikeln')
         }
       } catch (error) {
         console.error('Error fetching article:', error)
@@ -63,14 +70,10 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       const url = params.id === 'new' ? '/api/articles' : `/api/articles/${params.id}`
       const method = params.id === 'new' ? 'POST' : 'PUT'
       
-      console.log('Sending request:', { url, method, article })
-
+      // API:t läser sessionen ur kakan, så någon Authorization-header behövs inte.
       const response = await fetch(url, {
         method,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(article),
       })
 
@@ -79,10 +82,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         throw new Error(`Failed to save article: ${errorData.error || response.statusText}`)
       }
 
-      const savedArticle = await response.json()
-      console.log('Article saved successfully:', savedArticle)
-      
-      // Omdirigera till dashboard efter att ha sparat
+      await response.json()
       router.push('/admin/dashboard')
     } catch (error) {
       console.error('Error saving article:', error)

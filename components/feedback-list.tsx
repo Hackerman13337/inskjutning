@@ -19,20 +19,19 @@ export function FeedbackList() {
 
   useEffect(() => {
     async function fetchFeedback() {
-      console.log('Fetching feedback...')
       try {
         const response = await fetch('/api/feedback')
-        console.log('Response status:', response.status)
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Received feedback data:', data)
-          setFeedback(data)
-        } else {
-          throw new Error('Failed to fetch feedback')
+
+        if (response.status === 401) {
+          setError('Du är inte längre inloggad. Ladda om sidan och logga in igen.')
+          return
         }
-      } catch (error) {
-        console.error('Error fetching feedback:', error)
-        setError('Failed to load feedback. Please try again later.')
+
+        if (!response.ok) throw new Error('Kunde inte hämta feedback')
+
+        setFeedback(await response.json())
+      } catch {
+        setError('Kunde inte ladda feedbacken. Försök igen om en stund.')
       } finally {
         setIsLoading(false)
       }
@@ -41,8 +40,8 @@ export function FeedbackList() {
     fetchFeedback()
   }, [])
 
-  if (isLoading) return <div>Loading feedback...</div>
-  if (error) return <div>Error: {error}</div>
+  if (isLoading) return <div className="text-sm text-muted-foreground">Laddar feedback…</div>
+  if (error) return <div className="text-sm text-destructive">{error}</div>
 
   const totalPages = Math.ceil(feedback.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -56,23 +55,20 @@ export function FeedbackList() {
       </CardHeader>
       <CardContent>
         {currentFeedback.length === 0 ? (
-          <p>Ingen feedback ännu.</p>
+          <p className="text-sm text-muted-foreground">Ingen feedback ännu.</p>
         ) : (
           <>
             <ul className="space-y-4">
               {currentFeedback.map((item, index) => {
-                let formattedDate = 'Invalid Date';
-                if (item.timestamp) {
-                  const parts = item.timestamp.split(/[T.]/);
-                  if (parts.length >= 2) {
-                    const [datePart, timePart] = parts;
-                    formattedDate = `${datePart} ${timePart}`;
-                  }
-                }
+                const parsed = item.timestamp ? new Date(item.timestamp) : null
+                const formattedDate =
+                  parsed && !Number.isNaN(parsed.getTime())
+                    ? parsed.toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' })
+                    : 'Okänt datum'
                 return (
                   <li key={index} className="border-b pb-2">
-                    <p className="text-sm text-gray-500">{formattedDate}</p>
-                    <p>{item.content}</p>
+                    <p className="text-xs text-muted-foreground tabular">{formattedDate}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm">{item.content}</p>
                   </li>
                 );
               })}
@@ -84,7 +80,7 @@ export function FeedbackList() {
               >
                 Föregående
               </Button>
-              <span>Page {currentPage} of {totalPages}</span>
+              <span className="text-sm text-muted-foreground">Sida {currentPage} av {totalPages}</span>
               <Button 
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}

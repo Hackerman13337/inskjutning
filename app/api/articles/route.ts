@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { getAuthenticatedUser, unauthorized } from '@/lib/api-auth'
 
-console.log('API route file loaded')
-
+/** Listan över artiklar är publik. */
 export async function GET() {
   const supabase = createRouteHandlerClient({ cookies })
-  
+
   try {
     const { data, error } = await supabase
       .from('articles')
@@ -15,44 +15,45 @@ export async function GET() {
 
     if (error) throw error
 
-    console.log('Fetched articles:', data)
-
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching articles:', error)
-    return NextResponse.json({ error: 'An error occurred while fetching articles' }, { status: 500 })
+    console.error('Kunde inte hämta artiklar:', error)
+    return NextResponse.json({ error: 'Kunde inte hämta artiklarna' }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies })
-  
+  const user = await getAuthenticatedUser()
+  if (!user) return unauthorized()
+
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const article = await request.json().catch(() => null)
+
+    if (!article || typeof article.title !== 'string' || typeof article.slug !== 'string') {
+      return NextResponse.json({ error: 'Titel och slug måste anges' }, { status: 400 })
     }
 
-    const article = await request.json()
+    const supabase = createRouteHandlerClient({ cookies })
     const { data, error } = await supabase
       .from('articles')
-      .insert([{
-        title: article.title,
-        slug: article.slug,
-        content: article.content,
-        meta_description: article.metaDescription
-      }])
+      .insert([
+        {
+          title: article.title,
+          slug: article.slug,
+          content: article.content,
+          meta_description: article.metaDescription ?? article.meta_description,
+        },
+      ])
       .select()
 
     if (error) {
-      console.error('Supabase error:', error)
+      console.error('Kunde inte skapa artikel:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    console.log('Article saved:', data)
     return NextResponse.json(data[0])
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
+    console.error('Oväntat fel när artikeln skulle skapas:', error)
+    return NextResponse.json({ error: 'Något gick fel' }, { status: 500 })
   }
 }

@@ -5,15 +5,21 @@ import type { NextRequest } from 'next/server'
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
-  const { data: { session } } = await supabase.auth.getSession()
 
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    if (!session && req.nextUrl.pathname !== '/admin/login') {
-      return NextResponse.redirect(new URL('/admin/login', req.url))
-    }
-    if (session && req.nextUrl.pathname === '/admin/login') {
-      return NextResponse.redirect(new URL('/admin/dashboard', req.url))
-    }
+  // getUser() verifierar token mot Supabase. getSession() läser bara kakan och
+  // litar på innehållet, vilket inte duger som skydd på servern.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { pathname } = req.nextUrl
+
+  if (!user && pathname !== '/admin/login') {
+    return NextResponse.redirect(new URL('/admin/login', req.url))
+  }
+
+  if (user && pathname === '/admin/login') {
+    return NextResponse.redirect(new URL('/admin/dashboard', req.url))
   }
 
   return res
