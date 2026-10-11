@@ -28,6 +28,7 @@ TARGET_DIR = os.path.join(ROOT, "public", "maltavlor")
 CASES = [
     # filnamn, namn, rutstorlek, blockbredd, blockhöjd, antal block i bredd/höjd
     ("maltavla-precision-a4.pdf", "Precision", 10, 180, 220, 1, 1),
+    ("maltavla-precision-markorer-a4.pdf", "Precision med markörer", 10, 180, 200, 1, 1),
     ("maltavla-jakt-a4.pdf", "Jakt", 20, 160, 200, 1, 1),
     ("maltavla-fyra-grupper-a4.pdf", "Fyra grupper", 10, 80, 100, 2, 2),
     ("maltavla-sex-sma-a4.pdf", "Sex små", 10, 80, 60, 2, 3),

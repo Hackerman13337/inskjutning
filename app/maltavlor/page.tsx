@@ -21,6 +21,18 @@ const targets: TargetSheet[] = [
     preview: '/maltavlor/maltavla-precision-a4.png',
   },
   {
+    name: 'Precision med markörer',
+    tagline: 'För målkamera-app',
+    description:
+      'Samma tavla som Precision, men med fyra markörer i hörnen som en app kan läsa av. Då räknar appen fram perspektiv, skala och nollpunkt av sig själv — du slipper mäta.',
+    reach: 'Mäter träffar upp till 9 cm i sidled och 10 cm i höjd',
+    specs: ['1 × 1 cm rutor', '18 × 20 cm rutnät', 'ArUco-markörer'],
+    caveat:
+      'Fungerar precis som vanligt om du skjuter utan app — markörerna sitter utanför skjutytan och stör ingenting.',
+    file: 'maltavla-precision-markorer-a4.pdf',
+    preview: '/maltavlor/maltavla-precision-markorer-a4.png',
+  },
+  {
     name: 'Jakt',
     tagline: 'Öppna sikten och skymning',
     description:

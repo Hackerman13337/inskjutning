@@ -131,6 +131,7 @@ Fyra tavlor i A4 ligger i `public/maltavlor/` och genereras av
 | Tavla | Rutor | Rutnät | Räckvidd från siktpunkten |
 |---|---|---|---|
 | Precision | 1 cm | 18 × 22 cm | ±9 × ±11 cm |
+| Precision med markörer | 1 cm | 18 × 20 cm | ±9 × ±10 cm |
 | Jakt | 2 cm | 16 × 20 cm | ±8 × ±10 cm |
 | Fyra grupper | 1 cm | 4 × (8 × 10 cm) | ±4 × ±5 cm |
 | Sex små | 1 cm | 6 × (8 × 6 cm) | ±4 × ±3 cm |
@@ -141,6 +142,11 @@ måttnoggrannhet: ett rutnät som inte är exakt en centimeter gör tavlan
 oanvändbar, eftersom man räknar rutor och matar in centimeter i verktyget. Varje
 tavla har ett kontrollmått på 10 cm i nederkanten som avslöjar en utskrift som
 skrivaren skalat om.
+
+Precision-varianten har fyra ArUco-markörer i hörnen så att en målkamera-app
+kan räkna fram perspektiv, skala och nollpunkt automatiskt. Måtten och
+avläsningen beskrivs i [MALTAVLA-FORMAT.md](MALTAVLA-FORMAT.md). Mönstren ligger
+färdiga i `scripts/aruco_patterns.py`, så generatorn förblir beroendefri.
 
 Rutnätens halva bredd och höjd måste vara jämnt delbara med rutstorleken,
 annars blir det halva rutor längs kanten. `npm run test:targets` mäter

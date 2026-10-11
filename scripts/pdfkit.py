@@ -125,6 +125,35 @@ class Page:
         self._op("h")
         self._op("B" if (fill and stroke) else ("f" if fill else "S"))
 
+
+    # -- fiducialmarkörer ---------------------------------------------------
+
+    def bit_matrix(self, x: float, y: float, size: float, bits) -> None:
+        """
+        Ritar en kvadratisk markör ur en bitmatris, t.ex. en ArUco-markör.
+
+        `bits` är rader uppifrån och ner, där 1 betyder vit cell och 0 svart —
+        samma orientering som OpenCV ritar dem. Hela rutan fylls först svart och
+        de vita cellerna ritas ovanpå, vilket ger exakta kantlinjer utan
+        hårfina glipor mellan cellerna.
+
+        (x, y) är markörens nedre vänstra hörn och `size` dess sida i millimeter.
+        """
+        rows = len(bits)
+        cell = size / rows
+
+        self.set_fill_gray(0.0)
+        self.rect(x, y, size, size, fill=True, stroke=False)
+
+        self.set_fill_gray(1.0)
+        for row_index, row in enumerate(bits):
+            # Raderna kommer uppifrån, men PDF:ens y växer uppåt.
+            cy = y + size - (row_index + 1) * cell
+            for col_index, bit in enumerate(row):
+                if bit:
+                    self.rect(x + col_index * cell, cy, cell, cell,
+                              fill=True, stroke=False)
+
     # -- text -------------------------------------------------------------
 
     #: Ungefärliga teckenbredder för Helvetica, räcker för att centrera text.
