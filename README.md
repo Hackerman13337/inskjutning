@@ -65,6 +65,14 @@ antal klick  = (önskad träffpunkt − medelträffpunkt) / cm per klick
 1 MOA = 2,908882 cm på 100 m, 1 MIL (mrad) = 10 cm på 100 m. All logik ligger
 samlad i [`lib/ballistics.ts`](lib/ballistics.ts) och är fri från UI-kod.
 
+Halva klick avrundas **bort från noll**, så att en avvikelse på ett halvt klick
+åt höger och en åt vänster ger lika många klick. Vanlig avrundning drar alltid
+uppåt och skulle behandla hållen olika.
+
+Målkamera-appen har en portering av den här filen i
+`se.anton.malkamera.ballistics`. De två måste ge samma svar — samma fall körs i
+`npm run test:ballistics` här och i `BallisticsTest.kt` där.
+
 ## Kom igång
 
 ```bash
@@ -174,6 +182,7 @@ ihop under en rubrik. Piltangenter bläddrar mellan tavlorna, Escape stänger.
 ```bash
 npm test               # kör allt
 
+npm run test:ballistics # beräkningarna, samma fall som appens BallisticsTest.kt
 npm run test:sw        # service workerns cachningsregler
 npm run test:backup    # granskning och sammanslagning av säkerhetskopior
 npm run test:targets   # måltavlornas mått i PDF:erna

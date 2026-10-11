@@ -173,8 +173,8 @@ export function calculateAdjustment(input: AdjustmentInput): AdjustmentResult | 
   const exactHorizontalClicks = correctionX / cmPerClick
   const exactVerticalClicks = correctionY / cmPerClick
 
-  const horizontalClicks = Math.round(exactHorizontalClicks)
-  const verticalClicks = Math.round(exactVerticalClicks)
+  const horizontalClicks = roundHalfAwayFromZero(exactHorizontalClicks)
+  const verticalClicks = roundHalfAwayFromZero(exactVerticalClicks)
 
   const residualX = correctionX - horizontalClicks * cmPerClick
   const residualY = correctionY - verticalClicks * cmPerClick
@@ -192,6 +192,18 @@ export function calculateAdjustment(input: AdjustmentInput): AdjustmentResult | 
     correctionY,
     group,
   }
+}
+
+/**
+ * Avrundar bort från noll, så att ett halvt klick åt höger och ett halvt klick
+ * åt vänster behandlas lika. Math.round drar alltid uppåt, vilket gör att 2,5
+ * blir 3 men −2,5 blir −2 — alltså olika beteende åt höger och vänster.
+ *
+ * Måste vara identisk med roundHalfAwayFromZero i appens Ballistics.kt.
+ */
+export function roundHalfAwayFromZero(value: number): number {
+  const rounded = Math.floor(Math.abs(value) + 0.5)
+  return value < 0 ? -rounded : rounded
 }
 
 /** Formaterar ett tal med svenskt decimaltecken. */
