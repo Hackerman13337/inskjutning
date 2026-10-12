@@ -21,6 +21,50 @@ from pdfkit import A4, Page, write_pdf  # noqa: E402
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                        "public", "maltavlor")
 
+# --------------------------------------------------------------------------- #
+#  Hörnmarkörer                                                               #
+# --------------------------------------------------------------------------- #
+#
+# Fyra ArUco-markörer i sidans hörn låter målkamera-appen räkna fram
+# perspektivet och skalan av sig själv. Varje markör ger fyra hörnpunkter, så
+# en enda överlevande markör räcker för en homografi — resten får gärna skjutas
+# sönder. ID-serien talar också om vilken tavla det är, och vilket hörn som är
+# vilket, så att orienteringen blir entydig även om tavlan hänger uppochner.
+#
+# Nollpunkten räknas ur markörernas geometri och aldrig ur siktpunkten, som ju
+# är det som skjuts bort.
+
+MARKER_SIZE = 24.0
+MARKER_MARGIN = 7.0
+#: Fri bredd mellan markörerna, där sidhuvud och fot får plats.
+SAFE_LEFT = MARKER_MARGIN + MARKER_SIZE + 5
+SAFE_RIGHT = 210 - SAFE_LEFT
+
+
+def corner_markers(page: Page, ids: dict) -> None:
+    """
+    Ritar de fyra hörnmarkörerna.
+
+    `ids` mappar hörn till markör-ID: "tl", "tr", "br", "bl".
+    """
+    from aruco_patterns import PATTERNS
+
+    left = MARKER_MARGIN
+    right = 210 - MARKER_MARGIN - MARKER_SIZE
+    bottom = MARKER_MARGIN
+    top = 297 - MARKER_MARGIN - MARKER_SIZE
+
+    placement = {
+        "tl": (left, top),
+        "tr": (right, top),
+        "br": (right, bottom),
+        "bl": (left, bottom),
+    }
+
+    for corner, marker_id in ids.items():
+        x, y = placement[corner]
+        page.bit_matrix(x, y, MARKER_SIZE, PATTERNS[marker_id])
+
 # Gråskala genomgående — svart bläck skriver ut likadant på varje skrivare,
 # och färg kostar bara pengar på en tavla som ska bli sönderskjuten.
 INK = 0.0
@@ -39,20 +83,22 @@ W_AXIS = 0.40
 #  Gemensamma delar                                                           #
 # --------------------------------------------------------------------------- #
 
-def header(page: Page, name: str, hint: str) -> None:
-    page.text(15, 283, "INSKJUTNING.SE", 9.5, bold=True, gray=0.25, tracking=0.35)
-    page.text(195, 283, name, 9.5, bold=True, gray=0.25, align="right")
-    page.text(195, 277.5, hint, 7.5, gray=0.45, align="right")
+def header(page: Page, name: str, hint: str,
+           left: float = 15, right: float = 195, top: float = 283) -> None:
+    """Sidhuvud. left/right krymps när hörnmarkörer tar plats i kanterna."""
+    page.text(left, top, "INSKJUTNING.SE", 9.5, bold=True, gray=0.25, tracking=0.35)
+    page.text(right, top, name, 9.5, bold=True, gray=0.25, align="right")
+    page.text(right, top - 5.5, hint, 7.5, gray=0.45, align="right")
 
     page.set_line_width(0.25)
     page.set_stroke_gray(0.75)
-    page.line(15, 273.5, 195, 273.5)
+    page.line(left, top - 9.5, right, top - 9.5)
 
 
-def write_in_fields(page: Page, y: float) -> None:
+def write_in_fields(page: Page, y: float, left: float = 15) -> None:
     """Rader att fylla i med penna vid bänken."""
     fields = [("Vapen", 52), ("Ammunition", 52), ("Avstånd (m)", 30), ("Datum", 30)]
-    x = 15
+    x = left
     for label, width in fields:
         page.text(x, y + 1.5, label, 6.5, gray=0.5)
         page.set_line_width(0.25)
@@ -61,12 +107,18 @@ def write_in_fields(page: Page, y: float) -> None:
         x += width
 
 
-def scale_check(page: Page, y: float) -> None:
+def scale_check(page: Page, y: float, x0: float = 15,
+                caption_center: float | None = None) -> None:
     """
     Kontrollmått: en 10 cm lång skala med millimeterstreck. Mäter den inte
     exakt 10 cm på papperet är utskriften omskalad och tavlan oanvändbar.
+
+    Måttet är också målkamera-appens självtest: efter perspektivkorrigeringen
+    mäter appen samma sträcka och varnar om den inte blir 100 mm.
+
+    `caption_center` flyttar förklaringen till en centrerad rad ovanför skalan,
+    vilket behövs när hörnmarkörer tar plats till höger om den.
     """
-    x0 = 15
     length = 100
 
     page.set_line_cap_butt()
@@ -88,12 +140,17 @@ def scale_check(page: Page, y: float) -> None:
     for cm in range(0, 11, 2):
         page.text(x0 + cm * 10, y + 5, str(cm), 6.5, gray=0.35, align="center")
 
-    page.text(x0 + length + 5, y + 1,
-              "Kontrollmått — ska mäta exakt 10 cm. Gör den inte det är utskriften",
-              7, gray=0.45)
-    page.text(x0 + length + 5, y - 3,
-              "omskalad: skriv ut igen i skala 100 %, inte \"anpassa till sidan\".",
-              7, gray=0.45)
+    if caption_center is None:
+        page.text(x0 + length + 5, y + 1,
+                  "Kontrollmått — ska mäta exakt 10 cm. Gör den inte det är utskriften",
+                  7, gray=0.45)
+        page.text(x0 + length + 5, y - 3,
+                  "omskalad: skriv ut igen i skala 100 %, inte \"anpassa till sidan\".",
+                  7, gray=0.45)
+    else:
+        page.text(caption_center, y + 13,
+                  "Kontrollmåttet ska mäta exakt 10 cm — annars är utskriften omskalad.",
+                  7, gray=0.45, align="center")
 
 
 def grid(page: Page, cx: float, cy: float, half_w: float, half_h: float,
@@ -327,9 +384,40 @@ def target_six_small() -> Page:
     return page
 
 
+def target_precision_markers() -> Page:
+    """
+    Precision-tavlan med hörnmarkörer som målkamera-appen känner igen.
+
+    Rutnätet är 2 cm lägre än den omarkerade varianten, eftersom markörerna tar
+    plats i hörnen. Allt annat är identiskt, och måtten är lika exakta.
+    """
+    page = Page(*A4)
+    header(page, "Precision", "1 × 1 cm rutor · 18 × 20 cm · läses av appen",
+           left=SAFE_LEFT, right=SAFE_RIGHT, top=281)
+    write_in_fields(page, 259)
+
+    # half_h måste vara jämnt delbart med rutstorleken, annars blir det halva
+    # rader längs kanten. 100 ger 20 hela rader och gott om luft till markörerna.
+    cx, cy, half_w, half_h = 105, 148, 90, 100
+    grid(page, cx, cy, half_w, half_h, step=10, major_every=5)
+    reference_circles(page, cx, cy, [50], half_w, half_h)
+    grid_labels(page, cx, cy, half_w, half_h, step=10, label_every=2)
+    aim_ring(page, cx, cy, diameter=24)
+
+    scale_check(page, 11, x0=40, caption_center=105)
+
+    # Medurs från övre vänster. Serien 10–13 betyder "Precision" för appen.
+    corner_markers(page, {"tl": 10, "tr": 11, "br": 12, "bl": 13})
+
+    return page
+
+
 TARGETS = [
     ("maltavla-precision-a4.pdf", target_precision, "Precision",
      "1 cm rutnät med öppen siktpunkt"),
+    ("maltavla-precision-markorer-a4.pdf", target_precision_markers,
+     "Precision med markörer",
+     "1 cm rutnät med hörnmarkörer som målkamera-appen läser av"),
     ("maltavla-jakt-a4.pdf", target_hunting, "Jakt",
      "2 cm rutnät med stor svart siktpunkt"),
     ("maltavla-fyra-grupper-a4.pdf", target_four_groups, "Fyra grupper",
